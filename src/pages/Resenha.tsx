@@ -1,5 +1,4 @@
-import React from 'react';
-import { MessageSquare, Calendar, Trophy, Beer } from 'lucide-react';
+import { MessageSquare, Trophy, Beer } from 'lucide-react';
 
 export function Resenha() {
   return (

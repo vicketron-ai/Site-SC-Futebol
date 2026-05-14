@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useStore } from '../store/useStore';
 import { Users, UserPlus, TrendingUp, Wallet, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';

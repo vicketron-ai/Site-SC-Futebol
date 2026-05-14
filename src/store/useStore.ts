@@ -2,19 +2,7 @@ import { create } from 'zustand';
 import type { Player, Match, Transaction, MonthlyPayment, User } from '../types';
 import { supabase } from '../lib/supabase';
 
-// Mock Data Initializer
-const generateMockMensalistas = (): Player[] => {
-  return Array.from({ length: 18 }).map((_, i) => ({
-    id: `m-${i + 1}`,
-    name: `Jogador Mensalista ${i + 1}`,
-    nickname: `Apelido ${i + 1}`,
-    phone: `(11) 99999-00${i.toString().padStart(2, '0')}`,
-    position: ['Goleiro', 'Zagueiro', 'Meia', 'Atacante'][i % 4],
-    status: 'mensalista',
-    joinDate: new Date(2023, 0, 1).toISOString(),
-    photoUrl: `https://ui-avatars.com/api/?name=J+${i + 1}&background=1a472a&color=fff`,
-  }));
-};
+
 
 interface AppState {
   user: User | null;
@@ -37,7 +25,7 @@ interface AppState {
   updateMonthlyPayment: (payment: MonthlyPayment) => void;
 }
 
-export const useStore = create<AppState>((set, get) => ({
+export const useStore = create<AppState>((set) => ({
       user: null,
       players: [],
       matches: [],

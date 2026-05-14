@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { Dashboard } from './pages/Dashboard';
 import { Jogadores } from './pages/Jogadores';
@@ -9,8 +9,6 @@ import { Resenha } from './pages/Resenha';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { useStore } from './store/useStore';
-import { Navigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -26,30 +24,22 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Busca a sessão inicial
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        // Busca o perfil para pegar a role e nome
         const { data: profile } = await supabase
           .from('users')
           .select('*')
           .eq('id', session.user.id)
           .single();
-          
+
         if (profile) {
-          setUser({
-            id: profile.id,
-            email: profile.email,
-            name: profile.name,
-            role: profile.role
-          });
+          setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role });
           await fetchData();
         }
       }
       setLoading(false);
     });
 
-    // Escuta mudanças (login, logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         const { data: profile } = await supabase
@@ -57,14 +47,9 @@ function App() {
           .select('*')
           .eq('id', session.user.id)
           .single();
-          
+
         if (profile) {
-          setUser({
-            id: profile.id,
-            email: profile.email,
-            name: profile.name,
-            role: profile.role
-          });
+          setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role });
           await fetchData();
         }
       } else {
@@ -74,10 +59,17 @@ function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser]);
+  }, [setUser, fetchData]);
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="h-12 w-12 border-4 border-brand-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -85,7 +77,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        
         <Route path="/" element={
           <ProtectedRoute>
             <DashboardLayout />

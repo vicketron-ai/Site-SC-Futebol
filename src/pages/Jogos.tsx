@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useStore } from '../store/useStore';
 import { Calendar, MapPin, Clock, Users, Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';

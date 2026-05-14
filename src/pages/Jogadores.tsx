@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { UserPlus, Search, Phone, Calendar } from 'lucide-react';
 import { cn } from '../utils/cn'; // I need to create this util
@@ -9,7 +9,7 @@ export function Jogadores() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredPlayers = players.filter(
-    (p) => p.status === activeTab && p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (p) => (p.status === (activeTab === 'mensalistas' ? 'mensalista' : 'avulso')) && p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

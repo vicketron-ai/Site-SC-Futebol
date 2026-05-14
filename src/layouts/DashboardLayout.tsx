@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { 
@@ -9,7 +9,6 @@ import {
   FileBarChart, 
   MessageSquare,
   Menu,
-  X,
   LogOut,
   Trophy
 } from 'lucide-react';

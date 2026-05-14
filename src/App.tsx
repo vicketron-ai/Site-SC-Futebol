@@ -1,0 +1,106 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { DashboardLayout } from './layouts/DashboardLayout';
+import { Dashboard } from './pages/Dashboard';
+import { Jogadores } from './pages/Jogadores';
+import { Financeiro } from './pages/Financeiro';
+import { Jogos } from './pages/Jogos';
+import { Resenha } from './pages/Resenha';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { useStore } from './store/useStore';
+import { Navigate, BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from './lib/supabase';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const user = useStore(state => state.user);
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
+function App() {
+  const { setUser, fetchData } = useStore();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Busca a sessão inicial
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        // Busca o perfil para pegar a role e nome
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile) {
+          setUser({
+            id: profile.id,
+            email: profile.email,
+            name: profile.name,
+            role: profile.role
+          });
+          await fetchData();
+        }
+      }
+      setLoading(false);
+    });
+
+    // Escuta mudanças (login, logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profile) {
+          setUser({
+            id: profile.id,
+            email: profile.email,
+            name: profile.name,
+            role: profile.role
+          });
+          await fetchData();
+        }
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setUser]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
+  }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        <Route path="/" element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="jogadores" element={<Jogadores />} />
+          <Route path="financeiro" element={<Financeiro />} />
+          <Route path="jogos" element={<Jogos />} />
+          <Route path="relatorios" element={<div className="p-4">Página em Construção: Relatórios</div>} />
+          <Route path="resenha" element={<Resenha />} />
+        </Route>
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Player, Match, Transaction, MonthlyPayment, User } from '../types';
+import type { Player, Match, Transaction, MonthlyPayment, User, Announcement, Event } from '../types';
 import { supabase } from '../lib/supabase';
 
 
@@ -10,6 +10,8 @@ interface AppState {
   matches: Match[];
   transactions: Transaction[];
   monthlyPayments: MonthlyPayment[];
+  announcements: Announcement[];
+  events: Event[];
   
   // Auth Actions
   setUser: (user: User | null) => void;
@@ -23,6 +25,11 @@ interface AppState {
   addMatch: (match: Omit<Match, 'id'>) => Promise<void>;
   addTransaction: (transaction: Omit<Transaction, 'id'>) => Promise<void>;
   updateMonthlyPayment: (payment: MonthlyPayment) => void;
+
+  addAnnouncement: (announcement: Omit<Announcement, 'id' | 'created_at'>) => Promise<void>;
+  deleteAnnouncement: (id: string) => Promise<void>;
+  addEvent: (event: Omit<Event, 'id' | 'created_at'>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -31,19 +38,25 @@ export const useStore = create<AppState>((set) => ({
       matches: [],
       transactions: [],
       monthlyPayments: [],
+      announcements: [],
+      events: [],
 
       setUser: (user) => set({ user }),
 
       fetchData: async () => {
-        const [playersRes, matchesRes, transactionsRes] = await Promise.all([
+        const [playersRes, matchesRes, transactionsRes, announcementsRes, eventsRes] = await Promise.all([
           supabase.from('players').select('*').order('name'),
           supabase.from('matches').select('*').order('date', { ascending: false }),
-          supabase.from('transactions').select('*').order('date', { ascending: false })
+          supabase.from('transactions').select('*').order('date', { ascending: false }),
+          supabase.from('announcements').select('*').order('created_at', { ascending: false }),
+          supabase.from('events').select('*').order('date', { ascending: true })
         ]);
         
         if (playersRes.data) set({ players: playersRes.data as Player[] });
         if (matchesRes.data) set({ matches: matchesRes.data as Match[] });
         if (transactionsRes.data) set({ transactions: transactionsRes.data as Transaction[] });
+        if (announcementsRes.data) set({ announcements: announcementsRes.data as Announcement[] });
+        if (eventsRes.data) set({ events: eventsRes.data as Event[] });
       },
 
       addPlayer: async (playerData) => {
@@ -90,5 +103,32 @@ export const useStore = create<AppState>((set) => ({
           };
         }
         return { monthlyPayments: [...state.monthlyPayments, payment] };
-      })
+      }),
+
+      addAnnouncement: async (announcementData) => {
+        const { data, error } = await supabase.from('announcements').insert([announcementData]).select().single();
+        if (!error && data) {
+          set((state) => ({ announcements: [data as Announcement, ...state.announcements] }));
+        }
+      },
+      deleteAnnouncement: async (id) => {
+        const { error } = await supabase.from('announcements').delete().eq('id', id);
+        if (!error) {
+          set((state) => ({ announcements: state.announcements.filter(a => a.id !== id) }));
+        }
+      },
+      addEvent: async (eventData) => {
+        const { data, error } = await supabase.from('events').insert([eventData]).select().single();
+        if (!error && data) {
+          set((state) => ({ 
+            events: [...state.events, data as Event].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
+          }));
+        }
+      },
+      deleteEvent: async (id) => {
+        const { error } = await supabase.from('events').delete().eq('id', id);
+        if (!error) {
+          set((state) => ({ events: state.events.filter(e => e.id !== id) }));
+        }
+      }
 }));

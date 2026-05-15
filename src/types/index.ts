@@ -62,3 +62,20 @@ export interface User {
   name: string;
   role: 'admin' | 'player';
 }
+
+export interface Announcement {
+  id: string;
+  type: 'warning' | 'info';
+  title: string;
+  description: string;
+  created_at?: string;
+}
+
+export interface Event {
+  id: string;
+  date: string;
+  title: string;
+  location: string;
+  description?: string;
+  created_at?: string;
+}

@@ -11,8 +11,8 @@ import { Register } from './pages/Register';
 import { useStore } from './store/useStore';
 import { supabase } from './lib/supabase';
 
-// E-mail do administrador principal
-const ADMIN_EMAIL = 'vicketron@gmail.com'; // Altere para o SEU e-mail
+// E-mails com acesso de administrador
+const ADMIN_EMAILS = ['vicketron@gmail.com', 'diretoria@scfutebol.com'];
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useStore(state => state.user);
@@ -27,8 +27,8 @@ function App() {
   const processSession = async (session: any) => {
     if (session?.user) {
       const meta = session.user.user_metadata;
-      // Garante que APENAS este e-mail será admin
-      const isAdmin = session.user.email === ADMIN_EMAIL;
+      // Garante que APENAS estes e-mails serão admin
+      const isAdmin = ADMIN_EMAILS.includes(session.user.email);
       setUser({
         id: session.user.id,
         email: session.user.email ?? '',

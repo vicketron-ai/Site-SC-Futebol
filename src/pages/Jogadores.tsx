@@ -25,7 +25,6 @@ export function Jogadores() {
       nickname: nickname || name.split(' ')[0],
       position,
       phone,
-      photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
       status
     });
     setIsSubmitting(false);
@@ -109,7 +108,7 @@ export function Jogadores() {
         {filteredPlayers.map((player) => (
           <div key={player.id} className="col-span-1 flex flex-col divide-y divide-gray-200 rounded-xl bg-white text-center shadow-sm ring-1 ring-gray-900/5 transition-all hover:shadow-md">
             <div className="flex flex-1 flex-col p-8">
-              <img className="mx-auto h-24 w-24 flex-shrink-0 rounded-full object-cover ring-2 ring-brand-gold/50" src={player.photoUrl} alt="" />
+              <img className="mx-auto h-24 w-24 flex-shrink-0 rounded-full object-cover ring-2 ring-brand-gold/50" src={player.photoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&background=10B981&color=fff`} alt="" />
               <h3 className="mt-6 text-sm font-medium text-gray-900">{player.name}</h3>
               <dl className="mt-1 flex flex-grow flex-col justify-between">
                 <dt className="sr-only">Apelido</dt>

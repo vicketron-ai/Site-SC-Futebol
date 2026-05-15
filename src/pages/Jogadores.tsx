@@ -4,9 +4,36 @@ import { UserPlus, Search, Phone, Calendar } from 'lucide-react';
 import { cn } from '../utils/cn'; // I need to create this util
 
 export function Jogadores() {
-  const { players } = useStore();
+  const { players, addPlayer } = useStore();
   const [activeTab, setActiveTab] = useState<'mensalistas' | 'avulsos'>('mensalistas');
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [name, setName] = useState('');
+  const [nickname, setNickname] = useState('');
+  const [position, setPosition] = useState('Atacante');
+  const [phone, setPhone] = useState('');
+  const [status, setStatus] = useState<'mensalista' | 'avulso'>('mensalista');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await addPlayer({
+      name,
+      nickname: nickname || name.split(' ')[0],
+      position,
+      phone,
+      photoUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+      status
+    });
+    setIsSubmitting(false);
+    setShowModal(false);
+    setName('');
+    setNickname('');
+    setPhone('');
+  };
 
   const filteredPlayers = players.filter(
     (p) => (p.status === (activeTab === 'mensalistas' ? 'mensalista' : 'avulso')) && p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -22,6 +49,7 @@ export function Jogadores() {
         {useStore(state => state.user)?.role === 'admin' && (
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <button
+              onClick={() => setShowModal(true)}
               type="button"
               className="flex items-center justify-center gap-2 rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-green"
             >
@@ -121,6 +149,59 @@ export function Jogadores() {
           </div>
         )}
       </div>
+
+      {/* Modal Adicionar Jogador */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">Novo Jogador</h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
+                <input required type="text" value={name} onChange={e => setName(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Apelido/Camisa</label>
+                  <input type="text" value={nickname} onChange={e => setNickname(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Posição</label>
+                  <select value={position} onChange={e => setPosition(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border">
+                    <option>Goleiro</option>
+                    <option>Zagueiro</option>
+                    <option>Lateral</option>
+                    <option>Meia</option>
+                    <option>Atacante</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Telefone/WhatsApp</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(00) 00000-0000" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <select value={status} onChange={e => setStatus(e.target.value as any)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border">
+                    <option value="mensalista">Mensalista</option>
+                    <option value="avulso">Avulso</option>
+                  </select>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-brand-green border border-transparent rounded-md hover:bg-brand-green/90 disabled:opacity-50">
+                  {isSubmitting ? 'Salvando...' : 'Salvar Jogador'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

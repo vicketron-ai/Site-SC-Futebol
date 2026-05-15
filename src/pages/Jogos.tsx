@@ -1,11 +1,34 @@
-
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Calendar, MapPin, Clock, Users, Plus } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export function Jogos() {
-  const { matches } = useStore();
+  const { matches, addMatch } = useStore();
+  
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState('20:00');
+  const [location, setLocation] = useState('Arena SC Futebol');
+  const [fee, setFee] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await addMatch({
+      date: new Date(date).toISOString(),
+      time,
+      location,
+      fee: parseFloat(fee) || 0,
+      participants: [] // Inicia sem participantes, o admin adiciona depois
+    });
+    setIsSubmitting(false);
+    setShowModal(false);
+    setFee('');
+  };
 
   return (
     <div className="space-y-6">
@@ -17,6 +40,7 @@ export function Jogos() {
         {useStore(state => state.user)?.role === 'admin' && (
           <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <button
+              onClick={() => setShowModal(true)}
               type="button"
               className="flex items-center justify-center gap-2 rounded-md bg-brand-green px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-green/90"
             >
@@ -72,6 +96,44 @@ export function Jogos() {
           </div>
         )}
       </div>
+
+      {/* Modal Adicionar Partida */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">Nova Partida</h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Data</label>
+                  <input required type="date" value={date} onChange={e => setDate(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Horário</label>
+                  <input required type="time" value={time} onChange={e => setTime(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Local da Partida</label>
+                <input required type="text" value={location} onChange={e => setLocation(e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Valor para Avulsos (R$)</label>
+                <input required type="number" step="0.01" min="0" value={fee} onChange={e => setFee(e.target.value)} placeholder="0.00" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-green focus:ring-brand-green sm:text-sm px-3 py-2 border" />
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-brand-green border border-transparent rounded-md hover:bg-brand-green/90 disabled:opacity-50">
+                  {isSubmitting ? 'Salvando...' : 'Criar Partida'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

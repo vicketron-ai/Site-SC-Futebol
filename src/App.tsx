@@ -33,7 +33,7 @@ function App() {
       try {
         if (session?.user) {
           const meta = session.user.user_metadata;
-          const isAdmin = ADMIN_EMAILS.includes(session.user.email);
+          const isAdmin = session.user.email ? ADMIN_EMAILS.includes(session.user.email) : false;
           setUser({
             id: session.user.id,
             email: session.user.email ?? '',

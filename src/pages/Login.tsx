@@ -48,7 +48,11 @@ export function Login() {
         </div>
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm text-center">
-            Credenciais inválidas.
+            {error === 'Email not confirmed' 
+              ? 'Esta conta ainda não foi confirmada. Crie uma nova conta ou confirme o e-mail.' 
+              : error === 'Invalid login credentials' 
+                ? 'E-mail ou senha incorretos.' 
+                : error}
           </div>
         )}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

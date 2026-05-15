@@ -66,7 +66,12 @@ export const useStore = create<AppState>((set) => ({
           .select()
           .single();
           
-        if (!error && data) {
+        if (error) {
+          console.error("ERRO AO ADD JOGADOR:", error);
+          alert("Erro Supabase: " + error.message + " - Details: " + error.details);
+          throw error;
+        }
+        if (data) {
           set((state) => ({ players: [...state.players, data as Player] }));
         }
       },
@@ -85,13 +90,23 @@ export const useStore = create<AppState>((set) => ({
 
       addMatch: async (matchData) => {
         const { data, error } = await supabase.from('matches').insert([matchData]).select().single();
-        if (!error && data) {
+        if (error) {
+          console.error("ERRO AO ADD MATCH:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
+        }
+        if (data) {
           set((state) => ({ matches: [data as Match, ...state.matches] }));
         }
       },
       addTransaction: async (transactionData) => {
         const { data, error } = await supabase.from('transactions').insert([transactionData]).select().single();
-        if (!error && data) {
+        if (error) {
+          console.error("ERRO AO ADD TRANSACT:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
+        }
+        if (data) {
           set((state) => ({ transactions: [data as Transaction, ...state.transactions] }));
         }
       },

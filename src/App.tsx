@@ -12,7 +12,7 @@ import { useStore } from './store/useStore';
 import { supabase } from './lib/supabase';
 
 // E-mails com acesso de administrador
-const ADMIN_EMAILS = ['vicketron@gmail.com', 'diretoria@scfutebol.com'];
+const ADMIN_EMAILS = ['vicketron@gmail.com', 'diretoria@scfutebol.com', 'teste@scfutebol.com'];
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useStore(state => state.user);

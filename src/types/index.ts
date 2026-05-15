@@ -18,7 +18,7 @@ export interface Match {
   location: string;
   time: string;
   fee: number;
-  participants: string[]; // array of player ids (both mensalistas and avulsos)
+  participants?: string[]; // array of player ids (both mensalistas and avulsos)
 }
 
 export type TransactionType = 'entrada' | 'saida';

@@ -11,11 +11,12 @@ import { Register } from './pages/Register';
 import { useStore } from './store/useStore';
 import { supabase } from './lib/supabase';
 
+// E-mail do administrador principal
+const ADMIN_EMAIL = 'vicketron@gmail.com'; // Altere para o SEU e-mail
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useStore(state => state.user);
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -23,43 +24,35 @@ function App() {
   const { setUser, fetchData } = useStore();
   const [loading, setLoading] = useState(true);
 
+  const processSession = async (session: any) => {
+    if (session?.user) {
+      const meta = session.user.user_metadata;
+      const isAdmin = session.user.email === ADMIN_EMAIL || meta?.role === 'admin';
+      setUser({
+        id: session.user.id,
+        email: session.user.email ?? '',
+        name: meta?.name ?? session.user.email?.split('@')[0] ?? 'Usuário',
+        role: isAdmin ? 'admin' : 'player',
+      });
+      await fetchData();
+    } else {
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role });
-          await fetchData();
-        }
-      }
+      await processSession(session);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (profile) {
-          setUser({ id: profile.id, email: profile.email, name: profile.name, role: profile.role });
-          await fetchData();
-        }
-      } else {
-        setUser(null);
-      }
+      await processSession(session);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [setUser, fetchData]);
+  }, []);
 
   if (loading) {
     return (
@@ -77,11 +70,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <DashboardLayout />
-          </ProtectedRoute>
-        }>
+        <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="jogadores" element={<Jogadores />} />
           <Route path="financeiro" element={<Financeiro />} />

@@ -1,13 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Chaves públicas do Supabase (anon key é segura para uso no frontend)
+const supabaseUrl = 'https://yqsadwacaukrmeeyjwqv.supabase.co';
+const supabaseAnonKey = 'sb_publishable_IDzJNEeMKeVT6PyKLkahMQ_neTri6zr';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Missing Supabase environment variables. Please check your .env file.');
-}
-
-export const supabase = createClient(
-  supabaseUrl || 'http://localhost:54321', 
-  supabaseAnonKey || 'public-anon-key'
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

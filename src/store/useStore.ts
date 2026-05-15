@@ -77,15 +77,21 @@ export const useStore = create<AppState>((set) => ({
       },
       updatePlayer: async (player) => {
         const { error } = await supabase.from('players').update(player).eq('id', player.id);
-        if (!error) {
-          set((state) => ({ players: state.players.map(p => p.id === player.id ? player : p) }));
+        if (error) {
+          console.error("ERRO AO ATUALIZAR JOGADOR:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
         }
+        set((state) => ({ players: state.players.map(p => p.id === player.id ? player : p) }));
       },
       deletePlayer: async (id) => {
         const { error } = await supabase.from('players').delete().eq('id', id);
-        if (!error) {
-          set((state) => ({ players: state.players.filter(p => p.id !== id) }));
+        if (error) {
+          console.error("ERRO AO EXCLUIR JOGADOR:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
         }
+        set((state) => ({ players: state.players.filter(p => p.id !== id) }));
       },
 
       addMatch: async (matchData) => {

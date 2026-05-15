@@ -122,7 +122,12 @@ export const useStore = create<AppState>((set) => ({
 
       addAnnouncement: async (announcementData) => {
         const { data, error } = await supabase.from('announcements').insert([announcementData]).select().single();
-        if (!error && data) {
+        if (error) {
+          console.error("ERRO AO ADD AVISO:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
+        }
+        if (data) {
           set((state) => ({ announcements: [data as Announcement, ...state.announcements] }));
         }
       },
@@ -134,7 +139,12 @@ export const useStore = create<AppState>((set) => ({
       },
       addEvent: async (eventData) => {
         const { data, error } = await supabase.from('events').insert([eventData]).select().single();
-        if (!error && data) {
+        if (error) {
+          console.error("ERRO AO ADD EVENTO:", error);
+          alert("Erro Supabase: " + error.message);
+          throw error;
+        }
+        if (data) {
           set((state) => ({ 
             events: [...state.events, data as Event].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) 
           }));

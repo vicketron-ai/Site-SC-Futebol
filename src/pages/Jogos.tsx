@@ -22,8 +22,7 @@ export function Jogos() {
       date: new Date(date).toISOString(),
       time,
       location,
-      fee: parseFloat(fee) || 0,
-      participants: [] // Inicia sem participantes, o admin adiciona depois
+      fee: parseFloat(fee) || 0
     });
     setIsSubmitting(false);
     setShowModal(false);
@@ -76,7 +75,7 @@ export function Jogos() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-gray-400" />
-                  <span>{match.participants.length} Jogadores (4 Avulsos)</span>
+                  <span>{match.participants?.length || 0} Jogadores (4 Avulsos)</span>
                 </div>
               </div>
             </div>

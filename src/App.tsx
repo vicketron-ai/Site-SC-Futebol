@@ -27,7 +27,8 @@ function App() {
   const processSession = async (session: any) => {
     if (session?.user) {
       const meta = session.user.user_metadata;
-      const isAdmin = session.user.email === ADMIN_EMAIL || meta?.role === 'admin';
+      // Garante que APENAS este e-mail será admin
+      const isAdmin = session.user.email === ADMIN_EMAIL;
       setUser({
         id: session.user.id,
         email: session.user.email ?? '',

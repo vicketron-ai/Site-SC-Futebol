@@ -36,11 +36,8 @@ export function Register() {
         setError('Erro ao criar conta: ' + signUpError.message);
         setLoading(false);
       } else {
-        // Supabase por padrão exige confirmação por e-mail.
-        // Se estiver desativado, ele loga direto. Se não, mostra mensagem.
-        setSuccess('Conta criada! Verifique seu e-mail para confirmar o cadastro, depois faça login.');
-        setLoading(false);
-        setTimeout(() => navigate('/login'), 4000);
+        setSuccess('Conta criada com sucesso! Entrando...');
+        setTimeout(() => navigate('/'), 1500);
       }
     }
   };

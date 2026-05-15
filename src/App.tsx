@@ -24,43 +24,37 @@ function App() {
   const { setUser, fetchData } = useStore();
   const [loading, setLoading] = useState(true);
 
-  const processSession = async (session: any) => {
-    if (session?.user) {
-      const meta = session.user.user_metadata;
-      // Garante que APENAS estes e-mails serão admin
-      const isAdmin = ADMIN_EMAILS.includes(session.user.email);
-      setUser({
-        id: session.user.id,
-        email: session.user.email ?? '',
-        name: meta?.name ?? session.user.email?.split('@')[0] ?? 'Usuário',
-        role: isAdmin ? 'admin' : 'player',
-      });
-      await fetchData();
-    } else {
-      setUser(null);
-    }
-  };
-
   useEffect(() => {
     let mounted = true;
 
-    const initSession = async () => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (mounted) await processSession(session);
-      } catch (e) {
-        console.error(e);
+        if (session?.user) {
+          const meta = session.user.user_metadata;
+          const isAdmin = ADMIN_EMAILS.includes(session.user.email);
+          setUser({
+            id: session.user.id,
+            email: session.user.email ?? '',
+            name: meta?.name ?? session.user.email?.split('@')[0] ?? 'Usuário',
+            role: isAdmin ? 'admin' : 'player',
+          });
+          
+          // Buscar dados com timeout para não travar
+          await Promise.race([
+            fetchData(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 10000))
+          ]).catch(e => console.error('Erro ao buscar dados:', e));
+          
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Erro no processamento da sessão:", error);
+        setUser(null);
       } finally {
         if (mounted) setLoading(false);
-      }
-    };
-
-    initSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (mounted) {
-        await processSession(session);
-        setLoading(false);
       }
     });
 
@@ -68,7 +62,7 @@ function App() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [setUser, fetchData]);
 
   if (loading) {
     return (
